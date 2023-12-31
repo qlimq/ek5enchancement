@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "CDEK EK5 KLO MOD",
+    "description": "asas5",
+    "version": "0.1",
+    "content_scripts": [
+        {
+            "js": [
+                "content-script.js"
+            ],
+            "matches": [
+                "https://ek5.cdek.ru/*"
+            ],
+            "all_frames": true
+        }, {
+            "js": [
+                "addresska.js"
+            ],
+            "matches": [
+                "https://addressstorageng.cdek.ru/*"
+            ],
+            "all_frames": true
+        }, {
+            "js": [
+                "order.js"
+            ],
+            "matches": [
+                "https://orderec5ng.cdek.ru/*"
+            ],
+            "all_frames": true
+        }
+    ]
+}
