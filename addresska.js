@@ -6,9 +6,20 @@ function send_message(type, data){
     parent.postMessage(msg, "*");
 }
 
-let lastOrder = -1;
-
 if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
+
+    let lastOrder = -1;
+
+    window.addEventListener('message', e => {
+        if (e.data.type == "actions") {
+            if (e.data.data == "focus") {
+                console.log('focusing');
+                document.querySelector('cdek-input[formcontrolname="barcode"] input').focus();
+            }
+        }
+    });
+    
+
     setTimeout(() => {
         send_message("debug","loaded!")
         const targetNode = document.querySelector("div[ref='eCenterContainer']");
@@ -36,8 +47,19 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
             }
         };
         const observer = new MutationObserver(callback);
-        
         observer.observe(targetNode, config);
+
+        let continousString = '';
+        document.addEventListener('keypress', e => {
+            console.log(continousString)
+            if (continousString == "!!cplxp") {
+                send_message("goto", "Комплексный приход")
+            }
+            continousString += e.key;
+            if (e.key == "Enter") {
+                continousString = '';
+            }
+        })
     }, 5000)
 
     

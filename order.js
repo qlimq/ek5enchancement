@@ -43,16 +43,33 @@ const customcssToLoad = `.ek5CustomButton {
 .customModal > dialog{
     margin: auto;
     padding: 20px;
+    max-height: 70%;
+    overflow-y: scroll;
     
 }
 #searchthing {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 10px;
+    margin-top: 10px;
+}
+#searchthing > div {
+    display: flex;
+    gap: 4px;   
 }
 .modalHeader{
     display:flex;
     justify-content: space-between
+}
+.searchHistoryBold{
+    font-weight: 600;
+}
+.searchHistoryInfo{
+    font-size: 1.2rem;
+}
+.searchHistoryDate{
+    opacity: 0.7;
+    cursor: default;
 }
 `;
 
@@ -72,6 +89,23 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
             style.appendChild(document.createTextNode(customcssToLoad));
         }
         document.getElementsByTagName('head')[0].appendChild(style);
+
+        
+        function search(order, number) {
+            document.querySelector('#onClearButton > button').click()
+            const numberSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
+            const orderSearchInput = document.querySelector('#orderNumberFilter input');
+            const evt = new Event("input");
+            if (number) {
+                numberSearchInput.value = number;
+                numberSearchInput.dispatchEvent(evt);
+            }
+            if (order) {
+                orderSearchInput.value = order;
+                orderSearchInput.dispatchEvent(evt);
+            }
+            document.querySelector('#onSearchByFilterButton > button').click()
+        }
 
         // action panel additions
         const actionPanel = document.querySelector(".panel-action > .panel-button-block");
@@ -170,17 +204,13 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
         // search by number
         const targetNode = document.querySelector('.content');
         const config = { attributes: false, childList: true, subtree: false };
+
         function receiverNumberSearch() {
-            document.querySelector('#onClearButton > button').click()
-                let num = document.querySelectorAll('.details > .details__wrapper > .details-card-receiver .details-card__grid .value-wrapper > span')[3].innerText.split(" ").pop();
-                if (num.length != 10) {
-                    num = num.slice(1);
-                }
-                const numSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
-                numSearchInput.value = num;
-                const evt = new Event("input");
-                numSearchInput.dispatchEvent(evt);
-                document.querySelector('#onSearchByFilterButton > button').click()
+            let num = document.querySelectorAll('.details > .details__wrapper > .details-card-receiver .details-card__grid .value-wrapper > span')[3].innerText.split(" ").pop();
+            if (num.length != 10) {
+                num = num.slice(1);
+            }
+            search(null, num)
         }
         function orderDetailsEnhancement() {
             const receiverNumber = document.querySelectorAll('.details > .details__wrapper > .details-card-receiver .details-card__grid .value-wrapper')[3];
@@ -194,8 +224,19 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
         const observer = new MutationObserver(orderDetailsEnhancement);
         observer.observe(targetNode, config);
 
+        // todo убрать спагетти
         // search history frontend
-        let searchHistoryStorage = localStorage.getItem('searchHistory'); 
+        let searchHistoryStorage = []; 
+        if (localStorage.getItem('searchHistory')) {
+            JSON.parse(searchHistoryStorage);
+        }
+        console.log(searchHistoryStorage)
+        if (!searchHistoryStorage) {
+            searchHistoryStorage = [];
+            localStorage.setItem("searchHistory", searchHistoryStorage)
+        }
+        
+
         const searchPanel = document.querySelector(".panel-button-block");
         const searchHistoryBtn = document.createElement('button');
 
@@ -206,46 +247,52 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
 
             <div class="modalHeader">
                 <h3>История поиска</h3>
+                <button id="clearHistory">Очистить</button>
                 <button id="closeDialog">x</button>
             </div>
             <div id="searchthing">
-                <button>
-                Заказ: 1493593502
-                </button>
-                <button>
-                Номер: 9841037350
-                </button>
-                <button>
-                Заказ: 1493593502
-                </button>
-                <button>
-                Номер: 9841037350
-                </button>
-                <button>
-                Заказ: 1493593502
-                </button>
-                <button>
-                Номер: 9841037350
-                </button>
-                <button>
-                Заказ: 1493593502
-                </button>
-                <button>
-                Номер: 9841037350
-                </button>
             </div>
         </dialog>
         `
         
         function searchHistory() {
+            searchHistoryStorage = localStorage.getItem('searchHistory') ? JSON.parse(localStorage.getItem('searchHistory')) : []; 
+            const searchHistoryToShow = searchHistoryModal.querySelector('#searchthing');
+            searchHistoryToShow.innerHTML = "";
+            function createRow(data) {
+                const row =  document.createElement('div');
+                const rowInfo =  document.createElement('span');
+                const rowDate =  document.createElement('span');
+                const rowButton =  document.createElement('button');
+                rowInfo.classList.add('searchHistoryInfo');
+                rowDate.classList.add('searchHistoryDate');
+
+                const date = new Date(data.date);
+                rowInfo.innerHTML = `${data.orderNumber ? "<span class='searchHistoryBold'>Заказ</span>: " + data.orderNumber : ""} ${data.clientNumber ? "<span class='searchHistoryBold'>Номер</span>: " + data.clientNumber : ""} `
+                rowDate.innerText = `${date.toTimeString().split(" ")[0]} ${date.toLocaleDateString('ru-RU')}`
+
+                rowButton.innerText = '🔎';
+                rowButton.addEventListener('click', e => {
+                    searchHistoryModal.remove();
+                    search(data.orderNumber, data.clientNumber)
+                })
+                row.append(rowInfo, rowDate,rowButton);
+                return row;
+            }
+            searchHistoryStorage.forEach(a => searchHistoryToShow.append(createRow(a)))
             const cdekModal = document.querySelector('app-root > cdek-modal');
+            
             cdekModal.appendChild(searchHistoryModal);
         }
         searchHistoryModal.querySelector('#closeDialog').addEventListener('click', () => {
             searchHistoryModal.remove();
         })
-        const searchHistoryToShow = searchHistoryModal.querySelector('#searchthing')
-        searchHistoryToShow
+        searchHistoryModal.querySelector('#clearHistory').addEventListener('click', () => {
+            localStorage.removeItem('searchHistory');
+            searchHistoryStorage = [];
+            searchHistoryModal.querySelector('#searchthing').innerHTML = "";
+        })
+        
 
         searchHistoryBtn.classList.add('ek5CustomButton');
         searchHistoryBtn.innerText = "🕑"
@@ -262,22 +309,52 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
         const configS = { attributes: true, childList: false, subtree: false}
 
         function writeUntilClicked() {
+            
             orderNumber = orderNumberInput.value;
-            clientNumber = clientNumberInput.value;
-            console.log(` ${orderNumber} ${clientNumber}`);
+            clientNumber = clientNumberInput ? clientNumberInput.value : document.querySelectorAll('.collapsed-filter__main .item-value')[1].innerText.replace(/\s+/g, '');
+            console.log(`${orderNumber}, ${clientNumber}`)
+        }
+        function writeIfPressedEnter(evt) { 
+            if (evt.key == "Enter") writeUntilClicked();
+        }
+        orderNumberInput.addEventListener('blur', writeUntilClicked);
+        clientNumberInput.addEventListener('blur', writeUntilClicked);
+        orderNumberInput.addEventListener('keydown', writeIfPressedEnter);
+        clientNumberInput.addEventListener('keydown', writeIfPressedEnter);
+
+        function dumbReset() {
+            orderNumberInput = document.querySelector('#orderNumberFilter input');
+            clientNumberInput = document.querySelector('#clientPhoneTailFilter input');
+            orderNumberInput.addEventListener('blur', writeUntilClicked);
+            clientNumberInput.addEventListener('blur', writeUntilClicked);
+            orderNumberInput.addEventListener('keydown', writeIfPressedEnter);
+            clientNumberInput.addEventListener('keydown', writeIfPressedEnter);
         }
 
-        orderNumberInput.addEventListener('keydown', writeUntilClicked);
-        clientNumberInput.addEventListener('keydown', writeUntilClicked);
-
+        document.querySelector('#onClearButton').addEventListener('click', dumbReset);
+        document.querySelector('#collapsedFilterButton').addEventListener('click', dumbReset)
+        // bad
+        let hackCounter = 0
         function onsearchButtonClick() {
-            // clientNumber = orderNumberInput ? orderNumberInput.value : document.querySelectorAll('.collapsed-filter__main .item-value')[1].innerText.replace(/\s+/g, '')
-            console.log(` ${orderNumber} ${clientNumber}`);
-            orderNumber, clientNumber = null;
-            
-            // orderNumberInput = document.querySelector('#orderNumberFilter input');
-            // clientNumberInput = document.querySelector('#clientPhoneTailFilter input');
-            // localStorage.setItem("searchHistory", )
+            hackCounter++
+            if (hackCounter > 1) {
+                if (orderNumber || clientNumber) {
+                    console.log(` ${orderNumber} ${clientNumber}`);
+                    const newObj = {"orderNumber": orderNumber, "clientNumber": clientNumber, "date": Date.now()};
+                    if (searchHistoryStorage.length > 0) {
+                        console.log(searchHistoryStorage)
+                        if (searchHistoryStorage.at(-1).orderNumber != newObj.orderNumber 
+                            || searchHistoryStorage.at(-1).clientNumber != newObj.clientNumber){   
+                            searchHistoryStorage.push(newObj)
+                        }
+                    } else {
+                        searchHistoryStorage.push(newObj)
+                    }
+                    localStorage.setItem("searchHistory", JSON.stringify(searchHistoryStorage))
+                }
+                orderNumber, clientNumber = null;
+                hackCounter = 0;
+            }
         } 
         const searchButtonObserver = new MutationObserver(onsearchButtonClick);
 
