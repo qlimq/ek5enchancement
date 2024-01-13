@@ -7,11 +7,10 @@ function send_message(type, data){
 }
 
 if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
-
     let lastOrder = -1;
 
     window.addEventListener('message', e => {
-        if (e.data.type == "actions") {
+        if (e.data.type == "action") {
             if (e.data.data == "focus") {
                 console.log('focusing');
                 document.querySelector('cdek-input[formcontrolname="barcode"] input').focus();
@@ -52,7 +51,7 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
         let continousString = '';
         document.addEventListener('keypress', e => {
             console.log(continousString)
-            if (continousString == "!!cplxp") {
+            if (continousString == "!!cplxp" || continousString == "!!сздчз") {
                 send_message("goto", "Комплексный приход")
             }
             continousString += e.key;

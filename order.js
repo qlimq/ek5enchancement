@@ -6,7 +6,8 @@ function send_message(type, data){
     parent.postMessage(msg, "*");
 }
 
-const customcssToLoad = `.ek5CustomButton { 
+const customcssToLoad = `
+.ek5CustomButton { 
     padding: 2px 8px;
     border: 1px solid #97063c;
     color: #97063c;
@@ -39,30 +40,56 @@ const customcssToLoad = `.ek5CustomButton {
     top: 0;
     left: 0;
     z-index: 99;
+    display: grid;
+    place-items: center;
 }
 .customModal > dialog{
     margin: auto;
     padding: 20px;
-    max-height: 70%;
-    overflow-y: scroll;
-    
+    border: 0;
+    box-shadow: 0 8px 16px rgba(8,35,48,.2);
+    width: 420px;
 }
 #searchthing {
     display: flex;
     flex-direction: column-reverse;
     gap: 10px;
     margin-top: 10px;
+    max-height: 60vh;
+    overflow-y: scroll;
+    padding: 6px;
+    border: 1px solid #919699;
+    border-radius: 4px;
+    overflow: auto;
+    margin-bottom: 8px;
 }
 #searchthing > div {
+    display: grid;
+    grid-template-columns: auto max-content max-content;   
+}
+#searchthing > div > button {
+    background-color: #069697;
+    cursor: pointer;
     display: flex;
-    gap: 4px;   
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #069697;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+}
+
+#searchthing > div > button > span{
+    filter: grayscale(1) contrast(3);
 }
 .modalHeader{
-    display:flex;
-    justify-content: space-between
+    display:grid;
+    grid-template-columns: auto max-content max-content;
+    gap: 6px;
 }
 .searchHistoryBold{
-    font-weight: 600;
+    font-weight: 500;
 }
 .searchHistoryInfo{
     font-size: 1.2rem;
@@ -70,6 +97,30 @@ const customcssToLoad = `.ek5CustomButton {
 .searchHistoryDate{
     opacity: 0.7;
     cursor: default;
+}
+#clearHistory, #closeDialog{
+    color: #069697;
+    border: 1px solid #069697;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 16px;
+    gap: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    background: inherit;
+}
+#clearHistory:hover, #closeDialog:hover, #searchthing > div > button:hover {
+    background-color: #80cbc4;
+    border-color: #80cbc4;
+    color: white;
+}
+#closeDialog{
+    width: 22px;
+    background-color: #069697;
+    color: white;
 }
 `;
 
@@ -95,16 +146,27 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
             document.querySelector('#onClearButton > button').click()
             const numberSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
             const orderSearchInput = document.querySelector('#orderNumberFilter input');
-            const evt = new Event("input");
             if (number) {
                 numberSearchInput.value = number;
-                numberSearchInput.dispatchEvent(evt);
+                numberSearchInput.dispatchEvent(new Event("input"));
+                document.querySelector('#onSearchByFilterButton > button').click();
             }
             if (order) {
+                orderSearchInput.focus();
+                /*
+                const enter = new Event("keypress", {
+                    trusted: true,
+                    code: 'Enter',
+                    key: 'Enter',
+                    charCode: 13,
+                    keyCode: 13,
+                    which: 13,
+                    view: window,
+                    bubbles: true
+                }); */
                 orderSearchInput.value = order;
-                orderSearchInput.dispatchEvent(evt);
+                // orderSearchInput.dispatchEvent(enter);
             }
-            document.querySelector('#onSearchByFilterButton > button').click()
         }
 
         // action panel additions
@@ -227,20 +289,20 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
         // todo убрать спагетти
         // search history frontend
         let searchHistoryStorage = []; 
-        if (localStorage.getItem('searchHistory')) {
-            JSON.parse(searchHistoryStorage);
+        const localStorageHistory = localStorage.getItem('searchHistory');
+        if (localStorageHistory != null) {
+            searchHistoryStorage = JSON.parse(localStorageHistory);
         }
-        console.log(searchHistoryStorage)
+        // чево?
         if (!searchHistoryStorage) {
-            searchHistoryStorage = [];
             localStorage.setItem("searchHistory", searchHistoryStorage)
         }
         
 
         const searchPanel = document.querySelector(".panel-button-block");
         const searchHistoryBtn = document.createElement('button');
-
         const searchHistoryModal = document.createElement('div');
+
         searchHistoryModal.classList.add('customModal');
         searchHistoryModal.innerHTML = `
         <dialog open>
@@ -268,10 +330,10 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
                 rowDate.classList.add('searchHistoryDate');
 
                 const date = new Date(data.date);
+                rowButton.innerHTML = "<span>🔎</span>"
                 rowInfo.innerHTML = `${data.orderNumber ? "<span class='searchHistoryBold'>Заказ</span>: " + data.orderNumber : ""} ${data.clientNumber ? "<span class='searchHistoryBold'>Номер</span>: " + data.clientNumber : ""} `
                 rowDate.innerText = `${date.toTimeString().split(" ")[0]} ${date.toLocaleDateString('ru-RU')}`
 
-                rowButton.innerText = '🔎';
                 rowButton.addEventListener('click', e => {
                     searchHistoryModal.remove();
                     search(data.orderNumber, data.clientNumber)
@@ -306,60 +368,47 @@ if(location.href.indexOf("orderec5ng.cdek.ru") != -1 && location.href.indexOf('g
         let orderNumber;
         let clientNumber;
 
-        const configS = { attributes: true, childList: false, subtree: false}
+        const configS = { attributes: true, childList: false, subtree: false};
 
-        function writeUntilClicked() {
-            
+        function writeNums(e) { 
             orderNumber = orderNumberInput.value;
-            clientNumber = clientNumberInput ? clientNumberInput.value : document.querySelectorAll('.collapsed-filter__main .item-value')[1].innerText.replace(/\s+/g, '');
-            console.log(`${orderNumber}, ${clientNumber}`)
+            clientNumber = clientNumberInput.value;
         }
-        function writeIfPressedEnter(evt) { 
-            if (evt.key == "Enter") writeUntilClicked();
-        }
-        orderNumberInput.addEventListener('blur', writeUntilClicked);
-        clientNumberInput.addEventListener('blur', writeUntilClicked);
-        orderNumberInput.addEventListener('keydown', writeIfPressedEnter);
-        clientNumberInput.addEventListener('keydown', writeIfPressedEnter);
 
         function dumbReset() {
             orderNumberInput = document.querySelector('#orderNumberFilter input');
             clientNumberInput = document.querySelector('#clientPhoneTailFilter input');
-            orderNumberInput.addEventListener('blur', writeUntilClicked);
-            clientNumberInput.addEventListener('blur', writeUntilClicked);
-            orderNumberInput.addEventListener('keydown', writeIfPressedEnter);
-            clientNumberInput.addEventListener('keydown', writeIfPressedEnter);
+            orderNumberInput.addEventListener('keydown', writeNums);
+            clientNumberInput.addEventListener('keydown', writeNums);
         }
+        dumbReset();
 
         document.querySelector('#onClearButton').addEventListener('click', dumbReset);
-        document.querySelector('#collapsedFilterButton').addEventListener('click', dumbReset)
-        // bad
-        let hackCounter = 0
+        document.querySelector('#collapsedFilterButton').addEventListener('click', dumbReset);
+
+        // hack: не знаю как сделать так чтобы один раз изменение видно было, при загрузке два раза мигает дом
+        let hackCounter = 0;
         function onsearchButtonClick() {
             hackCounter++
-            if (hackCounter > 1) {
-                if (orderNumber || clientNumber) {
-                    console.log(` ${orderNumber} ${clientNumber}`);
-                    const newObj = {"orderNumber": orderNumber, "clientNumber": clientNumber, "date": Date.now()};
-                    if (searchHistoryStorage.length > 0) {
-                        console.log(searchHistoryStorage)
-                        if (searchHistoryStorage.at(-1).orderNumber != newObj.orderNumber 
-                            || searchHistoryStorage.at(-1).clientNumber != newObj.clientNumber){   
-                            searchHistoryStorage.push(newObj)
-                        }
-                    } else {
+            if (hackCounter > 1 && (orderNumber || clientNumber)) {
+                console.log(` ${orderNumber} ${clientNumber}`);
+                const newObj = {"orderNumber": orderNumber, "clientNumber": clientNumber, "date": Date.now()};
+                if (searchHistoryStorage.length > 0) {
+                    if (searchHistoryStorage.at(-1).orderNumber != newObj.orderNumber 
+                        || searchHistoryStorage.at(-1).clientNumber != newObj.clientNumber){   
                         searchHistoryStorage.push(newObj)
                     }
-                    localStorage.setItem("searchHistory", JSON.stringify(searchHistoryStorage))
+                } else {
+                    searchHistoryStorage.push(newObj)
                 }
+                localStorage.setItem("searchHistory", JSON.stringify(searchHistoryStorage))
                 orderNumber, clientNumber = null;
                 hackCounter = 0;
             }
         } 
+
         const searchButtonObserver = new MutationObserver(onsearchButtonClick);
-
         searchButtonObserver.observe(overlayWrapper, configS);
-
     }, 5000)
 
     

@@ -30,20 +30,51 @@ window.addEventListener('message', e => {
             if (a.textContent.includes(e.data.data)) {
                 a.click();
                 if (e.data.data == "Комплексный приход"){
-                    send_message("https://warehouseng.cdek.ru/pwt.html", "action", "focus")
+                    setTimeout(() => {
+                        send_message("https://warehouseng.cdek.ru/pwt.html", "action", "focus")
+                    }, 200);
                 }
                 if (e.data.data == "Адресное хранение"){
-                    send_message("https://addressstorageng.cdek.ru/pwt.html", "action", "focus")
+                    setTimeout(() => {
+                        send_message("https://addressstorageng.cdek.ru/pwt.html", "action", "focus")
+                    }, 200)
                 }
             }
         }
     }
 });
 function send_message(where, type, data){
-    const iframe = document.querySelector(`iframe[src^="${where}"]`)
-    const msg = {
-        type: type,
-        data: data
+    const iframe = document.querySelector(`iframe[src^="${where}"]`);
+    if (iframe) {
+        const msg = {
+            type: type,
+            data: data
+        }
+        iframe.contentWindow.postMessage(msg, "*");
     }
-    iframe.contentWindow.postMessage(msg, "*");
 }
+// const customcssToLoad = `
+// app-new-navs{
+//     overflow: hidden;
+// }
+// app-new-navs::before{
+//     content: "";
+//     position: absolute;
+//     z-index: -1;
+//     display:block;
+//     background-image: url('https://i.redd.it/fiax4nb7rxsa1.jpg');
+//     background-size: cover;
+//     width: 140%;
+//     height: 140%;
+//     left: -0.5vw;
+//     top: -0.5vh;
+//     filter: blur(10px) brightness(50%);
+// }
+// `
+// const style = document.createElement('style');
+//         if (style.styleSheet) {
+//             style.styleSheet.cssText = customcssToLoad;
+//         } else {
+//             style.appendChild(document.createTextNode(customcssToLoad));
+//         }
+// document.getElementsByTagName('head')[0].appendChild(style);
