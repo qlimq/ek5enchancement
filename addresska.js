@@ -16,6 +16,12 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
                 document.querySelector('cdek-input[formcontrolname="barcode"] input').focus();
             }
         }
+        if (e.data.type == "complexReader") {
+            const cdekInput = document.querySelector('cdek-input[formcontrolname="barcode"] input');
+            cdekInput.value = e.data.data;
+            const addressAdd = document.querySelector('form button');
+            addressAdd.click();
+        }
     });
     
 

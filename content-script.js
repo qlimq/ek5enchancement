@@ -42,6 +42,23 @@ window.addEventListener('message', e => {
             }
         }
     }
+
+    
+    if (e.data.type == "complexReader") {
+        const g = document.querySelector(".new-header-wrapper > .dndList");
+        const f = document.querySelector(".new-header-wrapper > .dndList > .active");
+        const complexOriginIndex = [...g.childNodes].indexOf(f);
+        
+        for (const a of document.querySelectorAll(".new-header-wrapper  .tab-item")) {
+            if (a.textContent.includes("Адресное хранение")) {
+                a.click();
+                send_message("https://addressstorageng.cdek.ru/pwt.html", "complexReader", e.data.data);
+                setTimeout(() => {
+                    g.childNodes[complexOriginIndex].click();
+                }, 500)
+            }
+        }
+    }
 });
 function send_message(where, type, data){
     const iframe = document.querySelector(`iframe[src^="${where}"]`);

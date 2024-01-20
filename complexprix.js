@@ -35,6 +35,19 @@ if(location.href.indexOf("warehouseng.cdek.ru") != -1 && location.href.indexOf('
                 continousString = '';
             }
         })
+        const alertsLog = document.querySelector('.alerts-log');
+        const config = { attributes: false, childList: true, subtree: false};
+
+        const onLogAlert = () => {
+            const latestMsg = alertsLog.childNodes[0].innerText;
+            if (latestMsg.indexOf('Выбран груз с номером')) {
+                var itemNumber = latestMsg.split(' ').slice(-1)[0];
+                send_message("complexReader", itemNumber);
+            }
+        }
+        const logObserver = new MutationObserver(onLogAlert);
+        logObserver.observe(alertsLog, config);
+        
     }, 5000)
 
     
