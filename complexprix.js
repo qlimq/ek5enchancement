@@ -39,10 +39,15 @@ if(location.href.indexOf("warehouseng.cdek.ru") != -1 && location.href.indexOf('
         const config = { attributes: false, childList: true, subtree: false};
 
         const onLogAlert = () => {
+            console.log('')
             const latestMsg = alertsLog.childNodes[0].innerText;
-            if (latestMsg.indexOf('Выбран груз с номером')) {
+            if (latestMsg.indexOf('Выбран груз с номером') != -1) {
                 var itemNumber = latestMsg.split(' ').slice(-1)[0];
                 send_message("complexReader", itemNumber);
+            }
+            if (latestMsg.indexOf('Регистрация') != -1) {
+                const shelf = latestMsg.match(/\(([^)]+)\)/)[1].replaceAll("-"," ")
+                send_message("readOut", shelf);
             }
         }
         const logObserver = new MutationObserver(onLogAlert);
