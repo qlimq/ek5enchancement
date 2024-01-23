@@ -23,7 +23,9 @@ window.addEventListener('message', e => {
             callback(e.data.data)
         }
     }
-    
+    if (e.data.type == "debug") {
+        console.log({"origin": e.origin, "data": e.data.data})
+    }
     if (e.data.type == "goto") {
         console.log(e.data.data)
         for (const a of document.querySelectorAll(".new-header-wrapper  .tab-item")) {
