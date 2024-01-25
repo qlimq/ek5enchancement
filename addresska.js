@@ -54,7 +54,7 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
         };
         const observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
-
+        /*
         let continousString = '';
         document.addEventListener('keypress', e => {
             console.log(continousString)
@@ -66,6 +66,7 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
                 continousString = '';
             }
         })
+        */
     }, 5000)
 
     
