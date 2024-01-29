@@ -173,9 +173,11 @@ function main() {
     const fastInvoiceBtn = document.createElement('button');
     const fastBarcodeBtn = document.createElement('button');
 
-    function fastPrint(type) {
-        const toPrint = Array.prototype.slice.call(document.querySelectorAll("div[ref='eLeftContainer'] > div[aria-selected='true'], div[ref='eLeftContainer'] > .custom-selected-row"));
-
+    function fastPrint(type, num = "null") {
+        let toPrint = Array.prototype.slice.call(document.querySelectorAll("div[ref='eLeftContainer'] > div[aria-selected='true'], div[ref='eLeftContainer'] > .custom-selected-row"));
+        if (!toPrint) {
+            toPrint = num;
+        }
         if (toPrint != 0) {
             function printRequestTemplate(body) {
                 fetch("https://orderec5ng.cdek.ru/api/preback", {
@@ -382,6 +384,40 @@ function main() {
 
     const searchButtonObserver = new MutationObserver(onsearchButtonClick);
     searchButtonObserver.observe(overlayWrapper, configS);
+
+    // app-delivery-details 
+    const wrapperElement = document.querySelector('.wrapper-form');
+    
+    function ddEnhancement() {
+        // fast print
+        const ddElement = document.querySelector('app-delivery-details');
+        if (ddElement) {
+            const orderNum = document.querySelector('.top__header').innerText.split(" ")[1].substr(1);
+            
+            const printPanel = document.querySelector('.print-button');
+            // too repetetive?
+            const DDfastInvoiceBtn = document.createElement('button');
+            const DDfastBarcodeBtn = document.createElement('button');
+
+            DDfastInvoiceBtn.classList.add('ek5CustomButton')
+            DDfastInvoiceBtn.textContent = "накл"
+            printPanel.appendChild(DDfastInvoiceBtn);
+            DDfastInvoiceBtn.addEventListener("click", () => { 
+                fastPrint("invoice", orderNum)
+            })
+        
+            DDfastBarcodeBtn.classList.add('ek5CustomButton')
+            DDfastBarcodeBtn.textContent = "шк"
+            printPanel.insertBefore(DDfastBarcodeBtn, DDfastInvoiceBtn);
+            DDfastBarcodeBtn.addEventListener("click", () => { 
+                fastPrint("barcode", orderNum)
+            })
+        }
+
+        //
+    }
+    const wrapperObserver = new MutationObserver(ddEnhancement);
+    wrapperObserver.observe(wrapperElement, config);
 }
 
 
