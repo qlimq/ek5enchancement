@@ -17,6 +17,7 @@ const customcssToLoad = `
     font-family: inherit;
     font-weight: 500;
     text-transform: uppercase;
+    line-height: 13px;
 }
 .ek5CustomButton:hover{
     background: #97063c;
@@ -48,11 +49,11 @@ const customcssToLoad = `
     padding: 20px;
     border: 0;
     box-shadow: 0 8px 16px rgba(8,35,48,.2);
-    width: 420px;
+    width: 440px;
 }
 #searchthing {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 10px;
     margin-top: 10px;
     max-height: 60vh;
@@ -97,8 +98,10 @@ const customcssToLoad = `
 .searchHistoryDate{
     opacity: 0.7;
     cursor: default;
+    margin-right: 5px;
+    line-height: 1.5;
 }
-#clearHistory, #closeDialog{
+.cdekDialogButton{
     color: #069697;
     border: 1px solid #069697;
     display: flex;
@@ -151,19 +154,17 @@ function main() {
             document.querySelector('#onSearchByFilterButton > button').click();
         }
         if (order) {
-            orderSearchInput.focus();
-            /*
-            const enter = new Event("keypress", {
-                trusted: true,
-                code: 'Enter',
-                key: 'Enter',
-                charCode: 13,
-                keyCode: 13,
-                which: 13,
-                view: window,
-                bubbles: true
-            }); */
+            orderSearchInput.click();
+            orderSearchInput.dispatchEvent(new Event("input"));
             orderSearchInput.value = order;
+            orderSearchInput.dispatchEvent(new KeyboardEvent("keydown", {
+                key: 'Enter',
+                bubbles: true
+            }));
+            orderSearchInput.dispatchEvent(new KeyboardEvent("keyup", {
+                key: 'Enter',
+                bubbles: true
+            }));
             // orderSearchInput.dispatchEvent(enter);
         }
     }
@@ -283,12 +284,13 @@ function main() {
     <dialog open>
 
         <div class="modalHeader">
-            <h3>История поиска</h3>
-            <button id="clearHistory">Очистить</button>
-            <button id="closeDialog">x</button>
+            <h3>История открытых заказов</h3>
+            <button id="clearHistory" class="cdekDialogButton">Очистить</button>
+            <button id="closeDialog" class="cdekDialogButton">x</button>
         </div>
         <div id="searchthing">
         </div>
+        <button id="checkAll" class="cdekDialogButton">Проверить все</button>
     </dialog>
     `
     
@@ -306,7 +308,8 @@ function main() {
 
             const date = new Date(data.date);
             rowButton.innerHTML = "<span>🔎</span>"
-            rowInfo.innerHTML = `${data.orderNumber ? "<span class='searchHistoryBold'>Заказ</span>: " + data.orderNumber : ""} ${data.clientNumber ? "<span class='searchHistoryBold'>Номер</span>: " + data.clientNumber : ""} `
+
+            rowInfo.innerHTML = "<span class='searchHistoryBold'>Заказ</span>: " + `<span>${data.orderNumber}</span>`;
             rowDate.innerText = `${date.toTimeString().split(" ")[0]} ${date.toLocaleDateString('ru-RU')}`
 
             rowButton.addEventListener('click', e => {
@@ -330,60 +333,19 @@ function main() {
         searchHistoryModal.querySelector('#searchthing').innerHTML = "";
     })
     
+    function checkAllOrders() {
+        const orders = String(searchHistoryStorage.map(i => i.orderNumber))
+        search(orders);
+    }
+    searchHistoryModal.querySelector('#checkAll').addEventListener('click', () => {
+        checkAllOrders();
+        searchHistoryModal.remove();
+    })
 
     searchHistoryBtn.classList.add('ek5CustomButton');
     searchHistoryBtn.innerText = "🕑"
     searchPanel.appendChild(searchHistoryBtn)
     searchHistoryBtn.addEventListener('click', searchHistory);
-
-    //search history backend
-    const overlayWrapper = document.querySelector('div[ref="overlayWrapper"]');
-    let orderNumberInput = document.querySelector('#orderNumberFilter input');
-    let clientNumberInput = document.querySelector('#clientPhoneTailFilter input');
-    let orderNumber;
-    let clientNumber;
-
-    const configS = { attributes: true, childList: false, subtree: false};
-
-    function writeNums(e) { 
-        orderNumber = orderNumberInput.value;
-        clientNumber = clientNumberInput.value;
-    }
-
-    function dumbReset() {
-        orderNumberInput = document.querySelector('#orderNumberFilter input');
-        clientNumberInput = document.querySelector('#clientPhoneTailFilter input');
-        orderNumberInput.addEventListener('keydown', writeNums);
-        clientNumberInput.addEventListener('keydown', writeNums);
-    }
-    dumbReset();
-
-    document.querySelector('#onClearButton').addEventListener('click', dumbReset);
-    document.querySelector('#collapsedFilterButton').addEventListener('click', dumbReset);
-
-    // hack: не знаю как сделать так чтобы один раз изменение видно было, при загрузке два раза мигает дом
-    let hackCounter = 0;
-    function onsearchButtonClick() {
-        hackCounter++
-        if (hackCounter > 1 && (orderNumber || clientNumber)) {
-            console.log(` ${orderNumber} ${clientNumber}`);
-            const newObj = {"orderNumber": orderNumber, "clientNumber": clientNumber, "date": Date.now()};
-            if (searchHistoryStorage.length > 0) {
-                if (searchHistoryStorage.at(-1).orderNumber != newObj.orderNumber 
-                    || searchHistoryStorage.at(-1).clientNumber != newObj.clientNumber){   
-                    searchHistoryStorage.push(newObj)
-                }
-            } else {
-                searchHistoryStorage.push(newObj)
-            }
-            localStorage.setItem("searchHistory", JSON.stringify(searchHistoryStorage))
-            orderNumber, clientNumber = null;
-            hackCounter = 0;
-        }
-    } 
-
-    const searchButtonObserver = new MutationObserver(onsearchButtonClick);
-    searchButtonObserver.observe(overlayWrapper, configS);
 
     // app-delivery-details 
     const wrapperElement = document.querySelector('.wrapper-form');
@@ -412,6 +374,17 @@ function main() {
             DDfastBarcodeBtn.addEventListener("click", () => { 
                 fastPrint("barcode", orderNum)
             })
+
+            // add to search history
+            const newObj = {"orderNumber": orderNum, "date": Date.now()};
+            if (searchHistoryStorage.length > 0) {
+                if (searchHistoryStorage[0].orderNumber != newObj.orderNumber){   
+                    searchHistoryStorage.unshift(newObj)
+                }
+            } else {
+                searchHistoryStorage.push(newObj)
+            }
+            localStorage.setItem("searchHistory", JSON.stringify(searchHistoryStorage))
         }
 
         //
