@@ -27,7 +27,7 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
     
 
     setTimeout(() => {
-        send_message("debug","loaded!")
+        // send_message("debug","loaded!")
         const targetNode = document.querySelector("div[ref='eCenterContainer']");
         const config = { attributes: false, childList: true, subtree: false };
 
@@ -54,19 +54,6 @@ if(location.href.indexOf("addressstorageng.cdek.ru") != -1){
         };
         const observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
-        /*
-        let continousString = '';
-        document.addEventListener('keypress', e => {
-            console.log(continousString)
-            if (continousString == "!!cplxp" || continousString == "!!сздчз") {
-                send_message("goto", "Комплексный приход")
-            }
-            continousString += e.key;
-            if (e.key == "Enter") {
-                continousString = '';
-            }
-        })
-        */
     }, 5000)
 
     

@@ -32,6 +32,9 @@
             "js": [
                 "order.js"
             ],
+            "css" : [
+                "order.css"
+            ],
             "matches": [
                 "https://orderec5ng.cdek.ru/*"
             ],

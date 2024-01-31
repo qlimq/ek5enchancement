@@ -23,20 +23,7 @@ if(location.href.indexOf("warehouseng.cdek.ru") != -1 && location.href.indexOf('
                 }
             }
         });
-        send_message("debug","loaded!")
-        /*
-        let continousString = '';
-        document.addEventListener('keypress', e => {
-            console.log(continousString)
-            if (continousString == "!!addr" || continousString == "!!фввк") {
-                send_message("goto", "Адресное хранение")
-            }
-            continousString += e.key;
-            if (e.key == "Enter") {
-                continousString = '';
-            }
-        })
-        */
+        // send_message("debug","loaded!")
         const alertsLog = document.querySelector('.alerts-log');
         const config = { attributes: false, childList: true, subtree: false};
 

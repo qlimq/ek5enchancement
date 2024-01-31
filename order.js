@@ -6,143 +6,12 @@ function send_message(type, data){
     parent.parent.postMessage(msg, "*");
 }
 
-const customcssToLoad = `
-.ek5CustomButton { 
-    padding: 2px 8px;
-    border: 1px solid #97063c;
-    color: #97063c;
-    border-radius: 4px;
-    background:inherit;
-    font-size: inherit;
-    font-family: inherit;
-    font-weight: 500;
-    text-transform: uppercase;
-    line-height: 13px;
-}
-.ek5CustomButton:hover{
-    background: #97063c;
-    color: white;
-    cursor:pointer;
-}
-.ek5CustomButton:active{
-    background: #4e0520;
-    border: 1px solid #4e0520;
-}
-.ek5CustomButtonGray{
-    border: 1px solid #4a4446;
-    color: #4a4446;
-    cursor: inherit;
-}
-.customModal{
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.2);
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 99;
-    display: grid;
-    place-items: center;
-}
-.customModal > dialog{
-    margin: auto;
-    padding: 20px;
-    border: 0;
-    box-shadow: 0 8px 16px rgba(8,35,48,.2);
-    width: 440px;
-}
-#searchthing {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-    max-height: 60vh;
-    overflow-y: scroll;
-    padding: 6px;
-    border: 1px solid #919699;
-    border-radius: 4px;
-    overflow: auto;
-    margin-bottom: 8px;
-}
-#searchthing > div {
-    display: grid;
-    grid-template-columns: auto max-content max-content;   
-}
-#searchthing > div > button {
-    background-color: #069697;
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #069697;
-    border-radius: 4px;
-    width: 24px;
-    height: 24px;
-}
-
-#searchthing > div > button > span{
-    filter: grayscale(1) contrast(3);
-}
-.modalHeader{
-    display:grid;
-    grid-template-columns: auto max-content max-content;
-    gap: 6px;
-}
-.searchHistoryBold{
-    font-weight: 500;
-}
-.searchHistoryInfo{
-    font-size: 1.2rem;
-}
-.searchHistoryDate{
-    opacity: 0.7;
-    cursor: default;
-    margin-right: 5px;
-    line-height: 1.5;
-}
-.cdekDialogButton{
-    color: #069697;
-    border: 1px solid #069697;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 32px;
-    padding: 0 16px;
-    gap: 7px;
-    cursor: pointer;
-    font-size: 14px;
-    border-radius: 4px;
-    background: inherit;
-}
-#clearHistory:hover, #closeDialog:hover, #searchthing > div > button:hover {
-    background-color: #80cbc4;
-    border-color: #80cbc4;
-    color: white;
-}
-#closeDialog{
-    width: 22px;
-    background-color: #069697;
-    color: white;
-}
-`;
-
 function getPwt(){
     return sessionStorage.getItem("pwt")
 }
 
 function main() {
     send_message("debug","loaded!");
-
-    // creating custom css for extension
-    const style = document.createElement('style');
-    if (style.styleSheet) {
-        style.styleSheet.cssText = customcssToLoad;
-    } else {
-        style.appendChild(document.createTextNode(customcssToLoad));
-    }
-    document.getElementsByTagName('head')[0].appendChild(style);
-
     
     function search(order, number) {
         document.querySelector('#onClearButton > button').click()
@@ -261,6 +130,21 @@ function main() {
     }
     const observer = new MutationObserver(orderDetailsEnhancement);
     observer.observe(targetNode, config);
+
+    const overlayWrapper = document.querySelector('div[ref="overlayWrapper"]');
+    const configS = { attributes: true, childList: false, subtree: false};
+
+    let hackCounter = 0;
+    function onWrapperFlash() {
+        hackCounter++
+        if (hackCounter > 1) {
+            const orders = document.querySelectorAll('.ag-pinned-left-cols-container div[col-id="orderNumber"]');
+            const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
+        }
+    } 
+
+    const overlayWrapperObserver = new MutationObserver(onWrapperFlash);
+    overlayWrapperObserver.observe(overlayWrapper, configS);
 
     // todo убрать спагетти
     // search history frontend
