@@ -14,7 +14,7 @@
             "all_frames": true
         }, {
             "js": [
-                "addresska.js"
+                "addressStorage.js"
             ],
             "matches": [
                 "https://addressstorageng.cdek.ru/*"
@@ -22,7 +22,7 @@
             "all_frames": true
         }, {
             "js": [
-                "complexprix.js"
+                "complexReceipt.js"
             ],
             "matches": [
                 "https://warehouseng.cdek.ru/*"
