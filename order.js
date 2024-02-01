@@ -79,14 +79,14 @@ function main() {
             }
 
             if (type == "invoice") {
-                const toPrintMap = toPrint.map(item => item.innerText);
+                const toPrintMap = toPrint.map(item => item.querySelector('a').innerText);
                 const toPrintFormatted = JSON.stringify(toPrintMap).slice(1,-1).replaceAll('"', '\"');
                 body = `{\"apiName\":\"orderPrint\",\"apiPath\":\"/web/print/form/order\",\"download\":true,\"orderNumbers\":[${toPrintFormatted}],\"template\":\"tpl_russia\",\"copiesCount\":1,\"lang\":\"rus\",\"method\":\"POST\"}`;
                 printRequestTemplate(body);
             }
             if (type == "barcode") {
                 const barcodeFormat = '"A6"' // todo https://stackoverflow.com/questions/5364062/how-can-i-save-information-locally-in-my-chrome-extension
-                const toPrintMap = toPrint.map(item => {return {"orderNumber": item.innerText}})
+                const toPrintMap = toPrint.map(item => {return {"orderNumber": item.querySelector('a').innerText}})
                 const toPrintFormatted = JSON.stringify(toPrintMap).replaceAll('"', '\"');
                 body = `{\"apiName\":\"orderPrint\",\"apiPath\":\"/web/print/form/barcode\",\"download\":true,\"orderData\": ${toPrintFormatted},\"format\":${barcodeFormat},\"lang\":\"rus\",\"method\":\"POST\"}`;
                 printRequestTemplate(body);
@@ -132,16 +132,89 @@ function main() {
     observer.observe(targetNode, config);
 
     const overlayWrapper = document.querySelector('div[ref="overlayWrapper"]');
-    const configS = { attributes: true, childList: false, subtree: false};
+    const configS = { attributes: false, childList: true, subtree: true};
 
     let hackCounter = 0;
+    let placeColumnWidth = 0;
+
     function onWrapperFlash() {
+        // todo: row-id check
+        const openStuff = {};
+        placeColumnWidth = 0;
         hackCounter++
         if (hackCounter > 1) {
-            const orders = document.querySelectorAll('.ag-pinned-left-cols-container div[col-id="orderNumber"]');
-            const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
+            hackCounter = 0;
+            // too much indenting todo: refactor
+            function fetchPlace() {
+                setTimeout(() => {
+                    const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
+                    
+    const configS = { attributes: false, childList: true, subtree: true};
+                    const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
+                    if (orders) {
+                        const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
+                        const readyOrdersIndices = orderStatuses.filter(w => {if (w.innerText.indexOf("Принято в оф.-п") != -1) return true}).map(g => orderStatuses.indexOf(g));
+                        const readyOrders = readyOrdersIndices.map(i => orders[i]);
+
+                        const interval = 250; // on the safer side
+                        const renderPlaces = new Promise((resolve) => {
+                            readyOrders.forEach( (item, index, array) => {
+                                const i = item.querySelector('a').innerText;
+                                setTimeout(() => {
+                                    fetch("https://gateway.cdek.ru/order/web/order/detail/main/places", {
+                                "headers": {
+                                    "accept": "application/json, text/plain, */*",
+                                    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                                    "content-type": "application/json",
+                                    "sec-ch-ua": "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"",
+                                    "sec-ch-ua-mobile": "?0",
+                                    "sec-ch-ua-platform": "\"Windows\"",
+                                    "sec-fetch-dest": "empty",
+                                    "sec-fetch-mode": "cors",
+                                    "sec-fetch-site": "same-site",
+                                    "x-auth-token": getPwt(),
+                                    "x-user-lang": "rus",
+                                    "x-user-locale": "ru_RU"
+                                },
+                                "referrer": "https://orderec5ng.cdek.ru/",
+                                "referrerPolicy": "strict-origin-when-cross-origin",
+                                "body": `{\"orderNumber\":\"${i}\"}`,
+                                "method": "POST",
+                                "mode": "cors",
+                                "credentials": "omit"
+                                })
+                                    .then( response => response.json())
+                                    .then( data => {
+                                        const f = data.places[0].shelf;
+                                        openStuff[item.parentElement.getAttribute('row-id')] = {"cdekid": false, "place": f}
+                                        const place = f.substr(f.indexOf(" ") + 1).slice(1,-1);
+                                        const element = document.createElement('span');
+                                        element.innerText = place;
+                                        element.classList.add('orderPlace');
+                                        item.appendChild(element);
+                                        if (element.offsetWidth > placeColumnWidth) {
+                                            placeColumnWidth = element.offsetWidth;
+                                        }
+                                        
+                                    })
+                                }, index * interval);
+                                setTimeout(() => resolve(), array.length * interval)
+                            })
+                        })
+                        renderPlaces.then(() => {
+                            send_message('debug', "done")
+                            document.querySelectorAll('.orderPlace').forEach(el => el.style.width = `${placeColumnWidth}px`);
+                        })
+                        send_message('debug','done')
+                    } else {
+                        fetchPlace();
+                    }
+                }, 200)
+            }
+            fetchPlace()
         }
-    } 
+    }
+    
 
     const overlayWrapperObserver = new MutationObserver(onWrapperFlash);
     overlayWrapperObserver.observe(overlayWrapper, configS);
