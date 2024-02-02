@@ -1,31 +1,85 @@
-body{
+body, h1,h2,h3,h4,p{
+    
     margin: 0;
+}
+body{
     width: 300px;
     height: 400px;
 }
 main{   
     width: 100%;
-    height: calc(100% - 30px);
+    height: 100%;
+    margin-top: 30px;
     position: relative;
     bottom: 0;
 }
 nav{
     height: 30px;
     display: flex;
-    background-color: pink;
+    background-color: #afafaf;
 }
 .menu{
-    width: 100%;
     height: 100%;
-    position: absolute;
     background-color: white;
+    display: none;
+    padding: 15px;
+}
+.new-version{
+    display: none;
+    border: 1px #aa5555 solid;
+    padding: 8px;
+    background: #ff999966;
+}
+.active{
+    display: block;
 }
 nav input[type=radio]{
     visibility: hidden;
+    position: fixed;
 }
 nav label{
     flex-grow: 1;
+    display: block;
 }
-nav input[type=radio]:checked + label{
-    background-color: green;
+nav label > span{
+    width: 100%;
+    height: 100%;
+    display: block;
+    line-height: 30px;
+    text-align: center;
+    user-select: none;
+}
+nav input[type=radio]:checked ~ *{
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background-color: #fafafa;
+    transition: all 0.2s ease-out;
+}
+.button{
+    cursor:default;
+    text-decoration: none;
+    color: inherit;
+    padding: 2px 6px;
+    border: 1px solid gray;
+    background-color: #ddd;
+    color: black;
+}
+.button:active{
+    background-color: white;
+    color: gray;
+}
+.gap{ 
+    display: flex; 
+    gap: 6px;
+    align-items: center;
+} 
+.margin-top{
+    margin-top: 6px
+}
+#version{
+    position: absolute;
+    color: gray;
+    font-family: monospace;
+    bottom: 0;
+    right: 0;
 }
