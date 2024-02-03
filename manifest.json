@@ -4,6 +4,9 @@
     "description": "Улучшения для CDEK ЭК5",
     "version": "0.1",
     "author": "СДЭК на Кирова 7",
+    "permissions": [
+        "storage"
+    ],
     "action": {
         "default_popup": "index.html",
         "default_title": "ЭК5 Мод"

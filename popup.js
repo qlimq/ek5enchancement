@@ -48,3 +48,36 @@ function checkforUpdates() {
 
 }
 checkforUpdates()
+
+const saveOptions = () => {
+    const color = document.getElementById('color').value;
+    const likesColor = document.getElementById('like').checked;
+
+    chrome.storage.sync.set(
+        { favoriteColor: color, likesColor: likesColor },
+        
+        async () => {
+            async function getCurrentTab() {
+                let queryOptions = { active: true, lastFocusedWindow: true };
+                // `tab` will either be a `tabs.Tab` instance or `undefined`.
+                let [tab] = await chrome.tabs.query(queryOptions);
+                return tab;
+              }            
+              console.log(getCurrentTab())
+            await chrome.tabs.sendMessage(getCurrentTab(),"wsup")
+        }
+    );
+};
+
+const restoreOptions = () => {
+    chrome.storage.sync.get(
+        { favoriteColor: 'red', likesColor: false },
+        (items) => {
+            document.getElementById('color').value = items.favoriteColor;
+            document.getElementById('like').checked = items.likesColor;
+        }
+    );
+};
+
+document.addEventListener('DOMContentLoaded', restoreOptions);
+document.getElementById('save').addEventListener('click', saveOptions);
