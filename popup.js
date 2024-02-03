@@ -54,8 +54,8 @@ const saveOptions = () => {
     const likesColor = document.getElementById('like').checked;
 
     chrome.storage.sync.set(
-        { favoriteColor: color, likesColor: likesColor },
-        
+        { favoriteColor: color, likesColor: likesColor, barcodeFormat: "A4" },
+        /*// TODO
         async () => {
             async function getCurrentTab() {
                 let queryOptions = { active: true, lastFocusedWindow: true };
@@ -65,7 +65,7 @@ const saveOptions = () => {
               }            
               console.log(getCurrentTab())
             await chrome.tabs.sendMessage(getCurrentTab(),"wsup")
-        }
+        }*/
     );
 };
 
