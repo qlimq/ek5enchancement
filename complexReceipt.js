@@ -6,14 +6,14 @@ function send_message(type, data){
     parent.parent.postMessage(msg, "*");
 }
 
-if(location.href.indexOf("warehouseng.cdek.ru") != -1 && location.href.indexOf('gate') != -1){
+if(location.href.indexOf("warehouseng.cdek.ru/#/complex-receipt-creator") != -1 && location.href.indexOf('gate') != -1){
     window.addEventListener('message', e => { 
         console.log(e)
         document.querySelector('iframe').contentWindow.postMessage(e.data);
     });
 }
 
-if(location.href.indexOf("warehouseng.cdek.ru") != -1 && location.href.indexOf('gate') == -1){
+if(location.href.indexOf("warehouseng.cdek.ru/#/complex-receipt-creator") != -1 && location.href.indexOf('gate') == -1){
     setTimeout(() => {
         window.addEventListener('message', e => { 
             if (e.data.type == "action") {
