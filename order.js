@@ -42,6 +42,7 @@ function search(order, number) {
         }
         orderSearchInput.dispatchEvent(new KeyboardEvent("keydown", enter));
         orderSearchInput.dispatchEvent(new KeyboardEvent("keyup", enter));
+        orderSearchInput.value = '';
     }
 }
 

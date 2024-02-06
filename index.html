@@ -26,27 +26,62 @@
             <div class="new-version">Доступна новая версия <span></span>! <p class="gap margin-top"><a href="https://github.com/qlimq/ek5enchancement/archive/refs/heads/main.zip" class="button" target="_blank">Скачать</a> <a href="https://github.com/qlimq/ek5enchancement/releases" target="_blank">Изменения</a></p></div>
         </div>
         <div id="options" class="menu">
-            <label for="like">
-                <input type="checkbox" id="like">
-                Крутой цвет
+            <h3>Заказы</h3>
+            <label for="keepHistory">
+                <input type="checkbox" id="keepHistory">
+                История открытых заказов
             </label>
             
-    <select id="color">
-        <option value="red">red</option>
-        <option value="green">green</option>
-        <option value="blue">blue</option>
-        <option value="yellow">yellow</option>
-      </select>
-      <button id="save">Save</button>
+            <label for="fastPrint">
+                <input type="checkbox" id="fastPrint">
+                Быстрая печать
+                <label for="barcodeFormat">
+                    Формат ШК в быстрой печати
+                    <select id="barcodeFormat">
+                        <option value="A4">A4</option>
+                        <option value="A5">A5</option>
+                        <option value="A6">A6</option>
+                        <option value="A7">A7</option>
+                    </select>
+                </label>
+            </label>
+
+            <label for="orderPlace">
+                <input type="checkbox" id="orderPlace">
+                Показывать полки
+            </label>
+            <h3>Адресное хранение</h3>
+            
+            <label for="readOut">
+                <input type="checkbox" id="readOut">
+                Произносить последние 4 цифры заказа
+                
+                <label for="readOutRepeat">
+                    <input type="checkbox" id="readOutRepeat">
+                    Повторное чтение через
+                    <input type="number" id="readOutRepeatTimer" value="2"> секунд
+                </label>
+                <label for="readOutPlace">
+                    <input type="checkbox" id="readOutPlace">
+                    Произносить полку
+                </label>
+                <label for="readOutReady">
+                    <input type="checkbox" id="readOutReady">
+                    Проверять принят ли заказ
+                </label>
+            </label>
+            <h3>Комплексный приход</h3>
+                <label for="complexReadOut">
+                    <input type="checkbox" id="complexReadOut">
+                    Произносить последние 4 цифры заказа
+                </label>
+            <p><button id="save">Save</button></p>
         </div>
         <div id="about" class="menu">
-            <h2>Различные улучшения для ЭК5</h2>
-            <p>Создано менеджером КЛО с ❤️</p>
-
-            <div>
-                <h3>Поддержать</h3>
-                <a href="https://" target="_blank">Ссылка на</a>
-            </div>
+            <h2>ЭК5 mod</h2>
+            <p>Создано <a href="https://github.com/qlimq" target="_blank">qlimq</a> с ❤️</p>
+            <br>
+            <a href="https://github.com/qlimq/ek5enchancement" target="_blank">Исходный код</a>
         </div>
     </main>
     <script src="popup.js"></script>

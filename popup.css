@@ -16,6 +16,10 @@ nav{
     display: flex;
     background-color: #afafaf;
 }
+#options label{
+    display: block;
+    margin: 4px 6px;
+}
 .menu{
     background-color: white;
     display: none;
@@ -79,4 +83,8 @@ nav input[type=radio]:checked ~ *{
     font-family: monospace;
     bottom: 0;
     right: 0;
+}
+#readOutRepeatTimer{
+    width: 30px;
+    
 }

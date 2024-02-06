@@ -49,23 +49,56 @@ function checkforUpdates() {
 }
 checkforUpdates()
 
-const saveOptions = () => {
-    const color = document.getElementById('color').value;
-    const likesColor = document.getElementById('like').checked;
+const settingsInputs = document.querySelectorAll('#options input');
 
-    chrome.storage.sync.set(
-        { favoriteColor: color, likesColor: likesColor, barcodeFormat: "A4" },
-        /*// TODO
-        async () => {
-            async function getCurrentTab() {
-                let queryOptions = { active: true, lastFocusedWindow: true };
-                // `tab` will either be a `tabs.Tab` instance or `undefined`.
-                let [tab] = await chrome.tabs.query(queryOptions);
-                return tab;
-              }            
-              console.log(getCurrentTab())
-            await chrome.tabs.sendMessage(getCurrentTab(),"wsup")
-        }*/
+const defaultSettings = {
+    "keepHistory": true,
+    "fastPrint": true,
+    "barcodeFormat": "A6",
+    "orderPlace": false,
+    "readOut": true,
+    "readOutRepeat": false,
+    "readOutPlace": true,
+    "readOutReady": true,
+    "complexReadOut": true
+}
+
+function setSettings(source) {
+    for(const [key,value] of Object.entries(source)) {
+        const option = document.querySelector(`#options #${key}`);
+        if (option.type === "checkbox") {
+            option.checked = value;
+        } else {
+            option.value = value;
+        }
+    }
+}
+
+if(localStorage.length === 0){
+    const newSettings = {...obj, ...defaultSettings};
+    saveOptions()
+}
+
+const obj = {};
+
+for (const key of Array.from(settingsInputs)) {
+     obj[key.id] = key.type === "checkbox" ? key.checked : key.value;
+}
+console.log(obj)
+const saveOptions = () => {
+    const obj = {};
+
+    for (const key of yourArray) {
+         obj[key] = whatever;
+    }
+
+    chrome.storage.sync.set(settings, () => {
+            chrome.tabs.query({active : true, lastFocusedWindow : true}, function (tabs) {
+                var currentTab = tabs[0];
+                chrome.tabs.sendMessage(currentTab.id, settings)
+
+            })  
+        }
     );
 };
 
@@ -73,8 +106,7 @@ const restoreOptions = () => {
     chrome.storage.sync.get(
         { favoriteColor: 'red', likesColor: false },
         (items) => {
-            document.getElementById('color').value = items.favoriteColor;
-            document.getElementById('like').checked = items.likesColor;
+            console.log(items)
         }
     );
 };
