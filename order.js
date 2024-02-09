@@ -147,62 +147,83 @@ function main() {
         // todo: row-id check
         const savedOrders = {};
 
-        setTimeout(() => {
-            const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
-            
-            const configS = { attributes: false, childList: true, subtree: true};
-            const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
-            if (orders) {
-                const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
-                const readyOrdersIndices = orderStatuses.filter(status => {
-                    if (status.innerText.indexOf("Принято в оф.-п") != -1) return true
-                }).map(item => orderStatuses.indexOf(item));
-                const readyOrders = readyOrdersIndices.map(i => orders[i]);
+        const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
+        
+        const configS = { attributes: false, childList: true, subtree: true};
+        const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
+        const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
+        const readyOrdersIndices = orderStatuses.filter(status => {
+            if (status.innerText.indexOf("Принято в оф.-п") != -1) return true
+        }).map(item => orderStatuses.indexOf(item));
+        const readyOrders = readyOrdersIndices.map(i => orders[i]);
 
-                const interval = 250; // on the safer side
-                const renderPlaces = new Promise((resolve) => {
-                    readyOrders.forEach( (item, index, array) => {
-                        const i = item.querySelector('a').innerText;
-                        setTimeout(() => {
-                            const url = "https://gateway.cdek.ru/order/web/order/detail/main/places";
-                            const body = {"orderNumber": i };
+        const interval = 250; // on the safer side
+        const renderPlaces = new Promise((resolve) => {
+            readyOrders.forEach( (item, index, array) => {
+                const i = item.querySelector('a').innerText;
+                setTimeout(() => {
+                    const url = "https://gateway.cdek.ru/order/web/order/detail/main/places";
+                    const body = {"orderNumber": i };
 
-                            defaultFetch(url, body)
-                            .then( response => response.json())
-                            .then( data => {
-                                const f = data.places[0].shelf;
-                                savedOrders[item.parentElement.getAttribute('row-id')] = {"cdekid": false, "place": f}
-                                const place = f.substr(f.indexOf(" ") + 1).slice(1,-1);
-                                const element = document.createElement('span');
-                                element.innerText = place;
-                                element.classList.add('orderPlace');
-                                item.appendChild(element);
-                                if (element.offsetWidth > placeColumnWidth) {
-                                    placeColumnWidth = element.offsetWidth;
-                                }
-                                
-                            })
-                        }, index * interval);
-                        setTimeout(() => resolve(), array.length * interval)
+                    defaultFetch(url, body)
+                    .then( response => response.json())
+                    .then( data => {
+                        const f = data.places[0].shelf;
+                        savedOrders[item.parentElement.getAttribute('row-id')] = {"cdekid": false, "place": f}
+                        const place = f.substr(f.indexOf(" ") + 1).slice(1,-1);
+                        const element = document.createElement('span');
+                        element.innerText = place;
+                        element.classList.add('orderPlace');
+                        item.appendChild(element);
+                        if (element.offsetWidth > placeColumnWidth) {
+                            placeColumnWidth = element.offsetWidth;
+                        }
+                        
                     })
-                })
-                renderPlaces.then(() => {
-                    send_message('debug', "done")
-                    document.querySelectorAll('.orderPlace').forEach(el => el.style.width = `${placeColumnWidth}px`);
-                })
-                send_message('debug','done')
-            } else {
-                fetchPlace();
-            }
-        }, 500)
+                }, index * interval);
+                setTimeout(() => resolve(), array.length * interval)
+            })
+        })
+        renderPlaces.then(() => {
+            send_message('debug', "done")
+            document.querySelectorAll('.orderPlace').forEach(el => el.style.width = `${placeColumnWidth}px`);
+        })
+        send_message('debug','done')
     }
 
+    let attempts = 0;
     function onWrapperFlash() {
-        placeColumnWidth = 0;
-        hackCounter++
-        if (hackCounter > 1) {
-            hackCounter = 0;
-            fetchPlace()
+        const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
+        const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
+        if (orders) {
+            attempts = 0;
+            setTimeout(() => {
+                placeColumnWidth = 0;
+                hackCounter++
+                if (hackCounter > 1) {
+                    hackCounter = 0;
+                    fetchPlace()
+                }
+                const numberSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
+                if (numberSearchInput.value == 0) {
+                    (function instantNumberSearch() {
+                        const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
+                        const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
+                        const firstNumber = orders[0].querySelector('a').innerText;
+                        defaultFetch('https://gateway.cdek.ru/order/web/order/detail/main/common',{"orderNumber": firstNumber})
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data)
+                                const num = data.receiver.phones[0].number;
+                                search(null, num);
+                            })
+                        console.log(firstNumber)
+                    })();
+                }
+            }, 500)
+        } else if(attempts < 5) {
+            onWrapperFlash();
+            attempts++;
         }
     }
     
