@@ -205,7 +205,8 @@ function main() {
                     fetchPlace()
                 }
                 const numberSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
-                if (numberSearchInput.value == 0) {
+                const totalCount = document.querySelector('#orderNumberFilter .total-count').innerText;
+                if (numberSearchInput.value == 0 & totalCount === "1") {
                     (function instantNumberSearch() {
                         const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
                         const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
