@@ -153,7 +153,7 @@ function main() {
         const orders = agLeftContainer.querySelectorAll('div[col-id="orderNumber"]');
         const orderStatuses = Array.from(document.querySelectorAll('.ag-center-cols-container div[col-id="orderStatus"]'));
         const readyOrdersIndices = orderStatuses.filter(status => {
-            if (status.innerText.indexOf("Принято в оф.-п") != -1) return true
+            if (status.innerText.indexOf("Принято в оф.-п") != -1 || status.innerText.indexOf("Не вручено") != -1) return true
         }).map(item => orderStatuses.indexOf(item));
         const readyOrders = readyOrdersIndices.map(i => orders[i]);
 
@@ -206,6 +206,7 @@ function main() {
                 }
                 const numberSearchInput = document.querySelector('#clientPhoneTailFilter > label > .wrapper > input');
                 const totalCount = document.querySelector('#orderNumberFilter .total-count').innerText;
+                /*
                 if (numberSearchInput.value == 0 & totalCount === "1") {
                     (function instantNumberSearch() {
                         const agLeftContainer = document.querySelector('.ag-pinned-left-cols-container');
@@ -220,7 +221,7 @@ function main() {
                             })
                         console.log(firstNumber)
                     })();
-                }
+                }*/
             }, 500)
         } else if(attempts < 5) {
             onWrapperFlash();
